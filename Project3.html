@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Twitter Test</title>
+  <!-- Import jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+  
+  <!-- Import our JS file -->
+  <script>
+	var yelpResponse;
+	var govResponse;
+	var GOV_API_KEY = "eujgHSikmTu1sKXuM9hNY8Nq0t4qaSPm4fqvLZJE"
+	var GOV_URL = "https://api.data.gov/ed/collegescorecard/v1/"
+	var SCHOOLS_SEARCH = "schools?"
+	$(document).ready(function() {
+        $("#search").on("click", function(e) {
+           YelpRequest(e);
+		   govRequest(e);
+        });
+		
+		function YelpRequest(e) {
+			var restaurant = $("#restaurant").val();
+            var location = $("#location").val();
+            
+            if(!restaurant || !location) {
+                $("#content").text("You must provide a user and count");
+                return;
+            }
+            
+            var search = '/?';
+            search += 'term=' + restaurant; 
+            search += '&location=' + location;
+            
+            $("#content").fadeOut(400);
+            
+            var proxyURL = 'YelpOAuth/YelpService.php' + search;
+            
+            $.getJSON(proxyURL, function(response){ 
+				yelpResponse = response;
+                var dataList = [];
+                
+                for(var i = 0; i < response.businesses.length; i++) {
+                    var data = document.createElement("div");
+                    data.classList.add("item");
+                    
+                    var responseString = "";
+                    
+                    responseString += " " + response.businesses[i].rating;
+                    responseString += ":" + response.businesses[i].review_count;
+                    
+                    data.textContent =  responseString;
+                    
+                    dataList.push(data);
+                }
+                
+                $("#content").html(dataList);
+                $("#content").fadeIn(400);
+            }); 
+		}
+		
+		function govRequest(e){
+			var url = GOV_URL;
+			url += SCHOOLS_SEARCH;
+			url += "school.name=";
+			var location = $("#location").val();
+			url += location;
+			url += "&api_key=" + GOV_API_KEY;
+			
+			$.ajax({
+				dataType: "json",
+				url: url,
+				data:null,
+				success: jsonLoaded
+			})
+		}
+		
+		function jsonLoaded(obj){
+			console.log(JSON.stringify(obj));
+		}
+	});
+  </script>
+
+  <style type="text/css">
+  	body{
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+  		min-width:600px;
+  		font-family:verdana,tahoma,sans-serif;
+  	}
+  	#finder{
+        width: 100%;
+        text-align: center;
+        margin: 0 auto;
+  	}
+    
+    #content {
+        margin-top: 40px;
+        width: 100%;
+    }
+  	
+  	.item{
+        width: 30%;
+        margin: 0 auto;
+  		border:1px solid black;
+  		padding:5px;
+        margin-top: 10px;
+        border-radius: 4px;
+        background-color: #3B94D9;
+        color: white; 
+        font-size: 1.1em;
+  	}
+    
+    .profileImg {
+        width: 25px;
+        height: 25px;
+    }
+  	
+  </style>
+</head>
+<body>
+    <section id="finder">
+        <h3>Yelp Test</h3>
+        <div id="searchArea">
+            <label for="restaurant">Restaurant</label>
+            <input id="restaurant" name="restaurant" type="text">
+            <label for="location">Location</label>
+            <input id="location" name="location" type="text">
+            <button id="search">Search</button>
+        </div>
+        <section id="content">
+        </section>
+    </section>
+</body>
+</html>
